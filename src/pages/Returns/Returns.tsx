@@ -75,9 +75,14 @@ const Returns: React.FC = () => {
     try {
       setLoading(true);
       const response = await getReturns();
-      setReturns(response.data);
+      // Handle both direct array and paginated response
+      const data = Array.isArray(response.data)
+        ? response.data
+        : (response.data as any)?.results || [];
+      setReturns(data);
     } catch (error) {
       showToast('Erreur lors du chargement des retours', 'error');
+      setReturns([]); // Ensure returns is always an array
     } finally {
       setLoading(false);
     }
@@ -86,18 +91,28 @@ const Returns: React.FC = () => {
   const fetchSales = async () => {
     try {
       const response = await getSales();
-      setSales(response.data);
+      // Handle both direct array and paginated response
+      const data = Array.isArray(response.data)
+        ? response.data
+        : (response.data as any)?.results || [];
+      setSales(data);
     } catch (error) {
       showToast('Erreur lors du chargement des ventes', 'error');
+      setSales([]); // Ensure sales is always an array
     }
   };
 
   const fetchVariants = async () => {
     try {
       const response = await getVariants({ search: searchText || undefined });
-      setVariants(response.data.filter(v => v.is_active && v.is_in_stock));
+      // Handle both direct array and paginated response
+      const data = Array.isArray(response.data)
+        ? response.data
+        : (response.data as any)?.results || [];
+      setVariants(data.filter(v => v.is_active && v.is_in_stock));
     } catch (error) {
       showToast('Erreur lors du chargement des produits', 'error');
+      setVariants([]); // Ensure variants is always an array
     }
   };
 
@@ -139,7 +154,16 @@ const Returns: React.FC = () => {
     resetForm();
   };
 
+  const hasReturn = (saleId: number): boolean => {
+    return returns.some(returnItem => returnItem.sale === saleId);
+  };
+
   const selectSale = (sale: Sale) => {
+    // Check if this sale already has a return
+    if (hasReturn(sale.id)) {
+      showToast('Cette vente a déjà fait l\'objet d\'un retour/échange. Une vente ne peut être retournée qu\'une seule fois.', 'error');
+      return;
+    }
     setSelectedSale(sale);
     setStep('select-items');
   };
@@ -271,7 +295,8 @@ const Returns: React.FC = () => {
       closeNewReturnModal();
       fetchReturns();
     } catch (error: any) {
-      showToast(error.response?.data?.message || 'Erreur lors de la création du retour', 'error');
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Erreur lors de la création du retour';
+      showToast(errorMessage, 'error');
     } finally {
       setLoading(false);
     }
@@ -411,19 +436,34 @@ const Returns: React.FC = () => {
                             </TableCell>
                           </TableRow>
                         ) : (
-                          filteredSales.map((sale) => (
-                            <TableRow
-                              key={sale.id}
-                              className="cursor-pointer hover:bg-muted/50 transition-colors"
-                              onClick={() => selectSale(sale)}
-                            >
-                              <TableCell className="font-mono font-semibold">#{sale.id.toString().padStart(5, '0')}</TableCell>
-                              <TableCell>{dayjs(sale.created_at).format('DD/MM/YYYY HH:mm')}</TableCell>
-                              <TableCell>{sale.cashier_name || 'N/A'}</TableCell>
-                              <TableCell className="text-right font-semibold">{parseFloat(sale.total_amount).toFixed(2)} MAD</TableCell>
-                              <TableCell className="capitalize">{sale.payment_method === 'cash' ? 'Espèces' : sale.payment_method === 'card' ? 'Carte' : 'Virement'}</TableCell>
-                            </TableRow>
-                          ))
+                          filteredSales.map((sale) => {
+                            const alreadyReturned = hasReturn(sale.id);
+                            return (
+                              <TableRow
+                                key={sale.id}
+                                className={cn(
+                                  "transition-colors",
+                                  alreadyReturned
+                                    ? "opacity-50 cursor-not-allowed bg-muted/30"
+                                    : "cursor-pointer hover:bg-muted/50"
+                                )}
+                                onClick={() => selectSale(sale)}
+                              >
+                                <TableCell className="font-mono font-semibold">
+                                  #{sale.id.toString().padStart(5, '0')}
+                                  {alreadyReturned && (
+                                    <span className="ml-2 inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
+                                      Retourné
+                                    </span>
+                                  )}
+                                </TableCell>
+                                <TableCell>{dayjs(sale.created_at).format('DD/MM/YYYY HH:mm')}</TableCell>
+                                <TableCell>{sale.cashier_name || 'N/A'}</TableCell>
+                                <TableCell className="text-right font-semibold">{parseFloat(sale.total_amount).toFixed(2)} MAD</TableCell>
+                                <TableCell className="capitalize">{sale.payment_method === 'cash' ? 'Espèces' : sale.payment_method === 'card' ? 'Carte' : 'Virement'}</TableCell>
+                              </TableRow>
+                            );
+                          })
                         )}
                       </TableBody>
                     </Table>

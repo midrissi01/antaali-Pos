@@ -50,7 +50,7 @@ const SalesHistory: React.FC = () => {
     try {
       setLoading(true);
       const response = await getSales();
-      setSales(response.data);
+      setSales(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       showToast('Erreur lors du chargement des ventes', 'error');
     } finally {
@@ -61,7 +61,7 @@ const SalesHistory: React.FC = () => {
   const fetchReturns = async () => {
     try {
       const response = await getReturns();
-      setReturns(response.data);
+      setReturns(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Erreur lors du chargement des retours', error);
     }
@@ -103,10 +103,11 @@ const SalesHistory: React.FC = () => {
   };
 
   const calculateStats = () => {
-    const totalSales = sales.length;
-    const totalRevenue = sales.reduce((sum, sale) => sum + parseFloat(sale.total_amount), 0);
-    const totalItems = sales.reduce(
-      (sum, sale) => sum + sale.items.reduce((s, item) => s + item.quantity, 0),
+    const salesArray = Array.isArray(sales) ? sales : [];
+    const totalSales = salesArray.length;
+    const totalRevenue = salesArray.reduce((sum, sale) => sum + parseFloat(sale.total_amount), 0);
+    const totalItems = salesArray.reduce(
+      (sum, sale) => sum + (Array.isArray(sale.items) ? sale.items.reduce((s, item) => s + item.quantity, 0) : 0),
       0
     );
     const averageSale = totalSales > 0 ? totalRevenue / totalSales : 0;

@@ -126,9 +126,14 @@ const POS: React.FC = () => {
   const fetchCategories = async () => {
     try {
       const response = await getCategories();
-      setCategories(response.data);
+      // Handle both direct array and paginated response
+      const data = Array.isArray(response.data)
+        ? response.data
+        : (response.data as any)?.results || [];
+      setCategories(data);
     } catch (error) {
       showToast('Erreur lors du chargement des catégories', 'error');
+      setCategories([]); // Ensure categories is always an array
     }
   };
 
@@ -139,9 +144,14 @@ const POS: React.FC = () => {
         search: debouncedSearchText || undefined,
         perfume: selectedCategory ? parseInt(selectedCategory) : undefined,
       });
-      setVariants(response.data.filter(v => v.is_active && v.is_in_stock));
+      // Handle both direct array and paginated response
+      const data = Array.isArray(response.data)
+        ? response.data
+        : (response.data as any)?.results || [];
+      setVariants(data.filter(v => v.is_active && v.is_in_stock));
     } catch (error) {
       showToast('Erreur lors du chargement des produits', 'error');
+      setVariants([]); // Ensure variants is always an array
     } finally {
       setLoading(false);
     }
@@ -336,7 +346,7 @@ const POS: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Toutes</SelectItem>
-                {categories.map(cat => (
+                {Array.isArray(categories) && categories.map(cat => (
                   <SelectItem key={cat.id} value={cat.id.toString()}>
                     {cat.name}
                   </SelectItem>
