@@ -13,9 +13,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarSeparator,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -55,22 +55,22 @@ const AppLayout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
-        <Sidebar>
-          <SidebarHeader className="border-b border-sidebar-border bg-gradient-to-br from-primary/5 to-primary/10">
-            <div className="flex items-center gap-3 px-3 py-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary shadow-sm">
-                <Store className="h-6 w-6 text-primary-foreground" />
+        <Sidebar collapsible="icon">
+          <SidebarHeader className="border-b border-sidebar-border bg-gradient-to-br from-primary/5 to-primary/10 group-data-[collapsible=icon]:bg-none group-data-[collapsible=icon]:p-2">
+            <div className="flex items-center gap-3 px-3 py-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2 group-data-[collapsible=icon]:justify-center">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary shadow-sm flex-shrink-0 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8">
+                <Store className="h-6 w-6 text-primary-foreground group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5" />
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col group-data-[collapsible=icon]:hidden">
                 <span className="text-lg font-bold text-sidebar-foreground">Antaali POS</span>
                 <span className="text-xs text-sidebar-foreground/60">Système de Caisse</span>
               </div>
             </div>
           </SidebarHeader>
 
-          <SidebarContent className="px-2 py-4">
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider mb-2 px-3">
+          <SidebarContent className="px-2 py-4 group-data-[collapsible=icon]:px-1 group-data-[collapsible=icon]:py-2">
+            <SidebarGroup className="group-data-[collapsible=icon]:p-0">
+              <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider mb-2 px-3 group-data-[collapsible=icon]:hidden">
                 Navigation
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -85,10 +85,14 @@ const AppLayout: React.FC<LayoutProps> = ({ children }) => {
                           onClick={() => navigate(item.path)}
                           isActive={isActive}
                           size="lg"
-                          className={isActive ? "sidebar-active-primary shadow-sm" : "hover:bg-sidebar-accent/80"}
+                          tooltip={item.label}
+                          className={cn(
+                            isActive ? "sidebar-active-primary shadow-sm" : "hover:bg-sidebar-accent/80",
+                            "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2"
+                          )}
                         >
-                          <Icon className="h-5 w-5" />
-                          <span className="font-medium">{item.label}</span>
+                          <Icon className="h-5 w-5 flex-shrink-0" />
+                          <span className="font-medium group-data-[collapsible=icon]:hidden">{item.label}</span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     );
@@ -98,13 +102,13 @@ const AppLayout: React.FC<LayoutProps> = ({ children }) => {
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter className="border-t border-sidebar-border mt-auto">
-            <div className="px-4 py-3">
-              <div className="flex items-center gap-2 text-xs text-sidebar-foreground/60">
+          <SidebarFooter className="border-t border-sidebar-border mt-auto group-data-[collapsible=icon]:border-0">
+            <div className="px-4 py-3 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2">
+              <div className="flex items-center gap-2 text-xs text-sidebar-foreground/60 group-data-[collapsible=icon]:justify-center">
                 <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                <span>Système opérationnel</span>
+                <span className="group-data-[collapsible=icon]:hidden">Système opérationnel</span>
               </div>
-              <div className="mt-2 text-xs text-sidebar-foreground/50">
+              <div className="mt-2 text-xs text-sidebar-foreground/50 group-data-[collapsible=icon]:hidden">
                 Version 1.0.0
               </div>
             </div>

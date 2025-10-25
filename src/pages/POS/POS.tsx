@@ -327,7 +327,7 @@ const POS: React.FC = () => {
                 placeholder="Rechercher un produit ou scanner un code-barres"
                 value={searchText}
                 onChange={e => setSearchText(e.target.value)}
-                className="pl-10"
+                className="pl-10 focus-visible:ring-0 focus-visible:border-input"
               />
             </div>
             <Select value={selectedCategory || undefined} onValueChange={(value) => setSelectedCategory(value === 'all' ? '' : value)}>
