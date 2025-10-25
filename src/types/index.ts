@@ -115,9 +115,10 @@ export interface CreateSale {
 }
 
 export type ReturnReason =
-  | 'defective'
-  | 'wrong_item'
   | 'customer_request'
+  | 'damaged_product'
+  | 'wrong_product'
+  | 'quality_issue'
   | 'other';
 
 export interface ReturnItem {
